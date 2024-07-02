@@ -1,0 +1,12 @@
+{
+  "include": [
+    "./nanograd",
+    "./main.py"
+  ],
+  "executionEnvironments": [
+    {
+      "root": "./",
+      "extraPaths": ["./nanograd"]
+    }
+  ]
+}

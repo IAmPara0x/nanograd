@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
+import sys
 from nanograd.optim import SGD
 from nanograd.engine import Tensor
-from nanograd.utils import softmax,crossentropy_loss
+from nanograd.utils import softmax,crossentropy_loss, uniform
 import numpy as np
 
 from sklearn.metrics import accuracy_score
@@ -12,16 +13,16 @@ from torchvision.datasets import MNIST
 from tqdm import tqdm
 
 def init_model():
-    scale_factor = 0.001
+    N = HEIGHT * WIDTH
 
-    w1 = Tensor(torch.randn(HEIGHT * WIDTH, HEIGHT * WIDTH) * scale_factor, _test=TEST)
-    b1 = Tensor(torch.randn(HEIGHT * WIDTH) * scale_factor, _test=TEST)
+    w1 = uniform(lower=-(1 / (N + N)), upper=(1 / (N + N)), shape=(N,N)); w1._test = TEST
+    b1 = Tensor(torch.zeros(N), _test=TEST)
 
-    w2 = Tensor(torch.randn(HEIGHT * WIDTH, HEIGHT * WIDTH) * scale_factor, _test=TEST)
-    b2 = Tensor(torch.randn(HEIGHT * WIDTH) * scale_factor, _test=TEST)
+    w2 = uniform(lower=-(1 / (N + N)), upper=(1 / (N + N)), shape=(N,N)); w2._test = TEST
+    b2 = Tensor(torch.zeros(N), _test=TEST)
 
-    w3 = Tensor(torch.randn(HEIGHT * WIDTH, N_CLASSES) * scale_factor, _test=TEST)
-    b3 = Tensor(torch.randn(N_CLASSES) * scale_factor, _test=TEST)
+    w3 = uniform(lower=-(1 / N_CLASSES), upper=(1 / N_CLASSES), shape=(N,N_CLASSES)); w2._test = TEST
+    b3 = Tensor(torch.zeros(N_CLASSES), _test=TEST)
 
     def model(x,y):
 
@@ -29,7 +30,6 @@ def init_model():
         h2 = (h1.matmul(w2) + b2).relu()
         logits = h2.matmul(w3) + b3
         probs = softmax(logits, 1)
-        # print(probs.value)
         loss = crossentropy_loss(y, probs, N_CLASSES)
         return (loss, probs)
 
@@ -38,7 +38,7 @@ def init_model():
 if __name__ == "__main__":
 
     DEVICE = "cpu"
-    EPOCHS = 4
+    EPOCHS = 5
     BATCH_SIZE=64
     HEIGHT=28
     WIDTH=28
@@ -57,7 +57,7 @@ if __name__ == "__main__":
     # Initialize Params
 
     model,params = init_model()
-    optimizer = SGD(params, lr=2e-2)
+    optimizer = SGD(params, lr=1e-3)
 
     for epoch in range(EPOCHS):
 

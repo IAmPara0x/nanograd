@@ -18,3 +18,6 @@ def cmp(label: str, x: Tensor):
         print(f"grads of tensor {label} matches with pytorch!")
     else:
         raise ValueError(f"grads of tensor {label} matches with pytorch!")
+
+def uniform(lower: float, upper: float, shape) -> Tensor:
+    return Tensor((lower - upper) * torch.rand(shape) + upper)

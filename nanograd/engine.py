@@ -8,22 +8,26 @@ class BroadcastDims:
 
 class Tensor(object):
 
-    def __init__(self, value, _childrens=[], _leaf=True, _test=False):
+    def __init__(self, value, _childrens=[], _leaf=True, requires_grad=True, _test=False):
 
         if isinstance(value, torch.Tensor):
             self.value = value
         else:
             self.value = torch.tensor(value)
 
-        self._childrens = _childrens
         self.grad = torch.zeros(self.value.shape)
         self.grad_fn = lambda: None
-        self._leaf = _leaf
-        self._test = _test
-        self._label: str | None = None
+        self.requires_grad = requires_grad
+
+        # NOTE: this will get invalid when the self.value is modified
         self.shape = self.value.shape
 
-        if _leaf and _test:
+        self._childrens = _childrens
+        self._label: str | None = None
+        self._leaf = _leaf
+        self._test = _test
+
+        if _leaf and _test and requires_grad:
             self.value.requires_grad = True
         
         if not _leaf and _test:
@@ -86,8 +90,8 @@ class Tensor(object):
         def _grad_fn():
 
             broadcasted_dims_self, broadcasted_dims_other = self.get_broadcasted_dims(self.value, other.value)
-            self.grad += self.reduce_dims(t.grad, broadcasted_dims_self)
-            other.grad += self.reduce_dims(t.grad, broadcasted_dims_other)
+            if self.requires_grad: self.grad += self.reduce_dims(t.grad, broadcasted_dims_self)
+            if other.requires_grad: other.grad += self.reduce_dims(t.grad, broadcasted_dims_other)
 
         t.grad_fn = _grad_fn
         return t
@@ -100,8 +104,8 @@ class Tensor(object):
         def _grad_fn():
 
             broadcasted_dims_self, broadcasted_dims_other = self.get_broadcasted_dims(self.value, other.value)
-            self.grad += self.reduce_dims(t.grad * other.value, broadcasted_dims_self)
-            other.grad += self.reduce_dims(t.grad * self.value, broadcasted_dims_other)
+            if self.requires_grad: self.grad += self.reduce_dims(t.grad * other.value, broadcasted_dims_self)
+            if other.requires_grad: other.grad += self.reduce_dims(t.grad * self.value, broadcasted_dims_other)
 
         t.grad_fn = _grad_fn
         return t
@@ -117,7 +121,7 @@ class Tensor(object):
 
         @torch.no_grad()
         def _grad_fn():
-            self.grad += n * (self.value ** (n - 1)) * t.grad
+            if self.requires_grad: self.grad += n * (self.value ** (n - 1)) * t.grad
 
         t.grad_fn = _grad_fn
         return t
@@ -130,8 +134,8 @@ class Tensor(object):
         def _grad_fn():
 
             broadcasted_dims_self, broadcasted_dims_other = self.get_broadcasted_dims(self.value, other.value)
-            self.grad += self.reduce_dims(t.grad, broadcasted_dims_self)
-            other.grad += -1 * self.reduce_dims(t.grad, broadcasted_dims_other)
+            if self.requires_grad: self.grad += self.reduce_dims(t.grad, broadcasted_dims_self)
+            if other.requires_grad: other.grad += -1 * self.reduce_dims(t.grad, broadcasted_dims_other)
 
         t.grad_fn = _grad_fn
         return t
@@ -157,7 +161,7 @@ class Tensor(object):
         self.grad = torch.tensor(1.0)
         for v in reversed(topo):
             v.grad_fn()
-            if v._test:
+            if v._test and v.requires_grad:
                 if not torch.allclose(v.grad, v.value.grad):
                     raise ValueError(f"grad of tensor {v} doesn't match with pytorch")
 
@@ -173,7 +177,7 @@ class Tensor(object):
 
         @torch.no_grad()
         def _grad_fn():
-            self.grad += t.grad * t.value
+            if self.requires_grad: self.grad += t.grad * t.value
 
         t.grad_fn = _grad_fn
         return t
@@ -184,7 +188,7 @@ class Tensor(object):
 
         @torch.no_grad()
         def _grad_fn():
-            self.grad += t.grad * (self.value ** -1)
+            if self.requires_grad: self.grad += t.grad * (self.value ** -1)
 
         t.grad_fn = _grad_fn
 
@@ -195,8 +199,8 @@ class Tensor(object):
 
         @torch.no_grad()
         def _grad_fn():
-            self.grad  += (t.grad @ other.value.T)
-            other.grad += (self.value.T @ t.grad)
+            if self.requires_grad: self.grad += (t.grad @ other.value.T)
+            if other.requires_grad: other.grad += (self.value.T @ t.grad)
 
         t.grad_fn = _grad_fn
         return t
@@ -212,7 +216,7 @@ class Tensor(object):
         def _grad_fn():
 
             if dim == None:
-                self.grad += t.grad
+                if self.requires_grad: self.grad += t.grad
                 return
 
             indices = []
@@ -263,9 +267,9 @@ class Tensor(object):
         def backwards():
 
             if dim != None and keepdim == False:
-                self.grad += t.grad.unsqueeze(dim)
+                if self.requires_grad: self.grad += t.grad.unsqueeze(dim)
             else:
-                self.grad += t.grad
+                if self.requires_grad: self.grad += t.grad
             
         t.grad_fn = backwards
         return t

@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import sys
 from nanograd.optim import SGD
 from nanograd.engine import Tensor
 from nanograd.utils import softmax,crossentropy_loss, uniform

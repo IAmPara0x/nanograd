@@ -9,7 +9,7 @@ def softmax(logits: Tensor, dim: int):
 
 def crossentropy_loss(labels: list[int], probs: Tensor, n_classes):
 
-    ohe_labels = Tensor(F.one_hot(torch.tensor(labels), n_classes).float())
+    ohe_labels = Tensor(F.one_hot(torch.tensor(labels), n_classes).float(), _test=probs._test)
     loss = (ohe_labels * probs).sum(1).log().sum() / Tensor(float(len(labels)))
     return -loss
 

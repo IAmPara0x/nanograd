@@ -45,6 +45,7 @@ if __name__ == "__main__":
     loss = crossentropy_loss(y, probs, N_CLASSES)
     loss.check_with_pytorch()
 
+
     # We can further check if the grads are actually same
     for name,parameter in [("w1", w1),("b1", b1),("w2", w2),("b2", b2),("w3", w3),("b3", b3)]:
 

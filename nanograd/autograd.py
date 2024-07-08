@@ -83,7 +83,6 @@ class Tensor(object):
         return x.shape == torch.Size([])
 
     def __add__(self, other: "Tensor") -> "Tensor":
-
         t = Tensor(self.value + other.value, _childrens=[self, other], _leaf=False, _test=self._test)
 
         @torch.no_grad()
@@ -144,7 +143,6 @@ class Tensor(object):
         return self * (other ** -1)
 
     def backward(self):
-
         assert (self.value.shape == () and "Grads can be created for scalar inputs only")
 
         topo = []
@@ -183,7 +181,6 @@ class Tensor(object):
         return t
 
     def log(self) -> "Tensor":
-
         t = Tensor(self.value.log(), _childrens=[self], _leaf=False, _test=self._test)
 
         @torch.no_grad()
@@ -275,7 +272,6 @@ class Tensor(object):
         return t
 
     def tanh(self) -> "Tensor":
-
         t = Tensor(self.value.tanh(), _childrens=[self], _leaf=False, _test=self._test)
 
         @torch.no_grad()

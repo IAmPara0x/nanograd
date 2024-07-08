@@ -30,7 +30,7 @@ class Tensor(object):
         if _leaf and _test and requires_grad:
             self.value.requires_grad = True
         
-        if not _leaf and _test:
+        if (not _leaf) and _test:
             self.value.retain_grad()
 
     def __repr__(self):
@@ -272,4 +272,15 @@ class Tensor(object):
                 if self.requires_grad: self.grad += t.grad
             
         t.grad_fn = backwards
+        return t
+
+    def tanh(self) -> "Tensor":
+
+        t = Tensor(self.value.tanh(), _childrens=[self], _leaf=False, _test=self._test)
+
+        @torch.no_grad()
+        def _grad_fn():
+            self.grad += (1 - t.value ** 2) * t.grad
+
+        t.grad_fn = _grad_fn
         return t

@@ -1,5 +1,5 @@
 
-from nanograd.engine import Tensor
+from nanograd.autograd import Tensor
 
 class SGD:
     def __init__(self, parameters: list[Tensor], lr=1e-3):

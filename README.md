@@ -33,6 +33,6 @@ hidden1.check_with_pytorch()
 
 ```
 
-Notice how you can use `hidden1.backward()` or `hidden1.check_with_pytorch(). The latter verifies all gradients calculated by Nanograd against those calculated by PyTorch. This is one of the advantages of wrapping around PyTorch tensors, as it allows for both matrix operations and simultaneous verification of gradient calculations.
+Notice how you can use `hidden1.backward()` or `hidden1.check_with_pytorch()`. The latter verifies all gradients calculated by Nanograd against those calculated by PyTorch. This is one of the advantages of wrapping around PyTorch tensors, as it allows for both matrix operations and simultaneous verification of gradient calculations.
 
 A detailed example of training on the MNIST dataset can be found in [mnist.py](./examples/mnist.py). Using only stochastic gradient descent and a simple neural network with a hidden layer, you can achieve an accuracy of 0.9715!

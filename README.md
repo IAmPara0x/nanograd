@@ -2,6 +2,10 @@
 
 Nanograd is inspired by micrograd but works with tensors! The entire autograd engine is implemented in under ~280 lines of code. Nanograd leverages PyTorch tensors for matrix operations like multiplication and addition, making it straightforward to verify the gradients calculated by Nanograd. Instead of calling loss.backward(), you can use loss.check_with_pytorch() to ensure all gradients in the compute graph match those calculated by PyTorch.
 
+![Nanograd-chan](./nanograd-chan.png)
+
+__**Nanograd chan calculating jacobian matrix**__
+
 # Example
 
 Nanograd has a Tensor class similar to PyTorch's tensor, with an almost identical API. However, Nanograd computes gradients on its own.
